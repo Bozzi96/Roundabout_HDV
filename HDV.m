@@ -21,7 +21,7 @@ classdef HDV
         stopped
 
         % Model params
-        alpha = 0.3 % headway gain
+        alpha = 0.2 % headway gain
         beta = 0.9 % relative velocity gain
 
         % plot only
@@ -45,6 +45,7 @@ classdef HDV
 
         % WMR
         ID
+        speedHistory
     end
     
     methods
@@ -62,6 +63,7 @@ classdef HDV
                 obj.Y = initPos(2);
             end
             obj.speed = initSpeed;
+            obj.speedHistory = [];
             obj.vc_prev = initSpeed;
             obj.h_eq = 10;
             obj.v_eq = 15;
@@ -103,6 +105,7 @@ classdef HDV
             obj.currObjective = 1;
             obj.Ts = Ts;
             obj.isJoint = false;
+
         end
 
         function obj = modelUpdate(obj, WMRs)            
@@ -123,7 +126,7 @@ classdef HDV
             obj.h = newState(1);
             if newState(2)>20, newState(2)=20; end
             obj.speed = newState(2);
-
+            obj.speedHistory(end+1) = obj.speed;
             obj.sOnArc = obj.sOnArc + obj.Ts*obj.speed;
 
             

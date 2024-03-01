@@ -56,7 +56,7 @@ longPlot = figure; % roundabout plot
 
 toDel = [];
 
-timeOfArrivalWMRs = [1 35 20]; % contains the time instant when each vehicle arrives close to the roundabout
+timeOfArrivalWMRs = [1 31 32]; % contains the time instant when each vehicle arrives close to the roundabout
 timeOfArrivalHDVs = [30];
 numWMR = length(WMRs); % current number of vehicle in the roundabout
 
@@ -322,6 +322,8 @@ while t <= simtime || finish
                     end
                 end 
             end
+
+            WMR_order_history{t} = WMR_order{1};
         
             % Check if a vehicle has exit the roundabout (outOfRange)
             i = 1;
@@ -361,12 +363,17 @@ while t <= simtime || finish
     drawnow
 
     t = t + 1;
-    pause(Ts);
+    pause(Ts+0.1);
 end
 
 %% Plots
 close all
 time = (1:length(xx1{1}))*Ts;
+toa = [1 20 30 35];
+color = [0 0.45 0.74
+         0.85,0.33,0.10
+         0.93,0.69,0.13
+         0.49,0.18,0.56];
 % close all
 figure
 
@@ -376,48 +383,92 @@ hold on
 title("Longitudinal Displacement [m]",'FontSize',15)
 xlabel("Time [s]",'FontSize',15)
 lgd = {};
-for i = 1:size(xx1,2)
-    for ii = size(xx1,1)
-        if any(HDV_indexes_history(i,:) == 1)
-            plot(time,xx1{i}(1,:),'DisplayName',strcat('HDV_',num2str(i)),'LineWidth',3);
-        else
-            plot(time,xx1{i}(1,:),'DisplayName',strcat('WMR_',num2str(i)),'LineWidth',3);
-        end
-    end
-end
-legend("Location","southeast")
 
+% CAV1
+yy = xx1{1}(1,1:19);
+plot((1:length(yy))*Ts,yy,'LineWidth',3,"Color",color(1,:))
+yy = [xx1{1}(1,19) xx1{2}(1,20:end)];
+plot((18+(1:length(yy)))*Ts,yy,'LineWidth',3,"Color",color(2,:))
+
+% CAV2
+yy = xx1{1}(1,20:end);
+plot((20+(1:length(yy)))*Ts,yy,'LineWidth',3,"Color",color(1,:))
+
+% CAV3
+yy = xx1{3}(1,30:34);
+plot((30+(1:length(yy)))*Ts,yy,'LineWidth',3,"Color",color(3,:))
+yy = [xx1{3}(1,34) xx1{4}(1,35:end)];
+plot((34+(1:length(yy)))*Ts,yy,'LineWidth',3,"Color",color(3,:))
+
+% HDV
+yy = xx1{3}(1,35:end);
+plot((35+(1:length(yy)))*Ts,yy,'LineWidth',3,"Color",color(4,:))
+
+legend("Location","southeast")
+%%
 figure
-subplot(1,2,2)
+tlc = tiledlayout(1,2);
+title(tlc,"$\alpha$ = 0.2, $\beta$ = 0.9",'interpreter','latex',"FontSize",35)
+
+nexttile
 grid on
 hold on
-title("Distances [m]",'FontSize',15)
-xlabel("Time [s]",'FontSize',15)
+title("Distances [m]",'FontSize',20)
+xlabel("Time [s]",'FontSize',20)
 lgd = {};
-for i = 1:length(xx1)-1
-    if HDV_indexes_history(i,:) == 1
-        plot(time,xx1{WMR_order{1}(i)}(1,:)-xx1{WMR_order{1}(i+1)}(1,:),'LineWidth',3,'DisplayName',strcat('HDV_',num2str(WMR_order{1}(i)),'-WMR_',num2str(WMR_order{1}(i+1))));
-    else
-        plot(time,xx1{WMR_order{1}(i)}(1,:)-xx1{WMR_order{1}(i+1)}(1,:),'LineWidth',3,'DisplayName',strcat('WMR_',num2str(WMR_order{1}(i)),'-WMR_',num2str(WMR_order{1}(i+1))));
-    end
-end
+vehicles = cat(1,[WMRs HDVs]);
+
+%%%%%
+offset = toa(2);
+idx = WMR_order_history{offset}(1);
+idx2 = WMR_order_history{offset}(2);
+yy = xx1{idx}(1,offset:end);
+yy2 = xx1{idx2}(1,offset:end);
+plot((offset+1:offset+length(yy-yy2))*Ts,yy-yy2,'LineWidth',3,'DisplayName',strcat(WMRs{idx}.ID,"-",WMRs{idx2}.ID));
+%%%%%
+offset = toa(3);
+offset2 = toa(4);
+idx = WMR_order_history{offset}(2);
+idx2 = WMR_order_history{offset}(3);
+yy = [xx1{idx}(1,offset:offset2-1) xx1{1}(1,offset2)];
+yy2 = [xx1{idx2}(1,offset:offset2-1) xx1{4}(1,offset2)];
+plot((offset+1:offset+length(yy-yy2))*Ts,yy-yy2,'LineWidth',3,'DisplayName',strcat(vehicles{idx}.ID,"-",vehicles{idx2}.ID));
+%%%%%
+offset = toa(4);
+idx = WMR_order_history{offset}(2);
+idx2 = WMR_order_history{offset}(3);
+yy = xx1{idx}(1,offset:end);
+yy2 = xx1{idx2}(1,offset:end);
+plot((offset+1:offset+length(yy-yy2))*Ts,yy-yy2,'LineWidth',3,'DisplayName',strcat(vehicles{idx}.ID,"-",vehicles{idx2}.ID));
+%%%%%
+idx = WMR_order_history{offset}(3);
+idx2 = WMR_order_history{offset}(4);
+yy = xx1{idx}(1,offset:end);
+yy2 = xx1{idx2}(1,offset:end);
+plot((offset+1:offset+length(yy-yy2))*Ts,yy-yy2,'LineWidth',3,'DisplayName',strcat(vehicles{idx}.ID,"-",vehicles{idx2}.ID));
+
+
+
+
 plot(time, dmin*ones(1,length(time)),'b--','DisplayName','Bounds','LineWidth',3);
 % plot(time, dmax*ones(1,length(time)),'b--',time, dmin*ones(1,length(time)),'b--','DisplayName','Bounds','LineWidth',3);
 plot(time, ddes*ones(1,length(time)),'r--','DisplayName','Reference','LineWidth',3);
-legend("Location","southeast")
+legend("Location","southeast","FontSize",20)
 
 % figure
-subplot(1,2,1)
+nexttile
 grid on
 hold on
 title("Velocity [m/s]",'FontSize',15)
 xlabel("Time [s]",'FontSize',15)
 for i = 1:length(xx1)
-    if HDV_indexes_history(i,:) == 1
-        plot(time,xx1{WMR_order{1}(i)}(2,:),'LineWidth',3,'DisplayName',strcat('HDV_',num2str(WMR_order{1}(i))));
+    idx = WMR_order{1}(i);
+    yy = xx1{idx}(2,toa(idx):end);
+    if idx > numWMR
+        plot((toa(idx)+1:toa(idx)+length(yy))*Ts,yy,'LineWidth',3,'DisplayName',HDVs{idx-numWMR}.ID);
     else
-        plot(time,xx1{WMR_order{1}(i)}(2,:),'LineWidth',3,'DisplayName',strcat('WMR_',num2str(WMR_order{1}(i))));
+        plot((toa(idx)+1:toa(idx)+length(yy))*Ts,yy,'LineWidth',3,'DisplayName',WMRs{idx}.ID);
     end
 end
 yline(vref,'--r','DisplayName','Reference','LineWidth',3)
-legend(lgd,"Location","southeast")
+legend(lgd,"Location","southeast","FontSize",20);

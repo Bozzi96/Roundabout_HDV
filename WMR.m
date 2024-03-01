@@ -30,6 +30,7 @@ classdef WMR
 
         % WMR
         ID
+        speedHistory
     end
     
     methods
@@ -65,6 +66,7 @@ classdef WMR
                 obj.derOnArc = obj.path{obj.currArc}.derivative(i);
                 obj.curvOnArc = [obj.path{obj.currArc}.curvature(i:end) obj.path{obj.currArc+1}.curvature];
             end
+            obj.speedHistory = [];
         end
 
         function obj = setController(obj, controllerObj)
@@ -85,6 +87,7 @@ classdef WMR
             sMax = obj.path{obj.currArc}.arclength;
             Ts = obj.MPCobj.Ts;
             obj.speed = obj.MPCobj.x0(end);
+            obj.speedHistory(end+1) = obj.speed;
             if obj.MPCobj.WMRNumber == 1
                 accel = obj.MPCobj.u_cl(2,1);
             else

@@ -55,7 +55,7 @@ function [x0,WMR_order,HDV_indexes] = platoonManager(Round,WMRs,HDVs,numWMR,x0_p
             if ~isempty(x0_prev)
                 virtPlatPos(1,:) = virtPlatPos(1,:) + x0_prev(1,1);
             end
-            x0{1} = [virtPlatPos' speed']';
+            x0{1} = [virtPlatPos' speed(WMR_order{1})']';
         end
         
         
